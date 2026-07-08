@@ -58,19 +58,22 @@ async function main() {
     where: { name: "Plumbing" },
   });
 
-  await prisma.service.upsert({
-    where: { id: "seed-service-pipe-repair" },
-    create: {
-      id: "seed-service-pipe-repair",
-      title: "Pipe Leak Repair",
-      description: "Fix leaking pipes and faucets",
-      price: 35,
-      durationMins: 60,
-      categoryId: plumbingCategory.id,
-      technicianId: technicianProfile.id,
-    },
-    update: {},
+  const existingService = await prisma.service.findFirst({
+    where: { technicianId: technicianProfile.id, title: "Pipe Leak Repair" },
   });
+
+  if (!existingService) {
+    await prisma.service.create({
+      data: {
+        title: "Pipe Leak Repair",
+        description: "Fix leaking pipes and faucets",
+        price: 35,
+        durationMins: 60,
+        categoryId: plumbingCategory.id,
+        technicianId: technicianProfile.id,
+      },
+    });
+  }
   console.log("Seeded sample technician with a service");
 
   const customerPassword = await bcrypt.hash("Customer@123", 10);
