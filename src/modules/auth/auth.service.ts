@@ -6,7 +6,7 @@ import config from "../../config";
 import { AppError } from "../../errors/AppError";
 import { prisma } from "../../lib/prisma";
 import { jwtUtils } from "../../utils/jwt";
-import { ILoginUser, IRegisterUser } from "./auth.interface";
+import { ILoginUser, IRegisterUser, IUpdateProfilePayload } from "./auth.interface";
 
 const createTokens = (payload: JwtPayload) => {
   const accessToken = jwtUtils.createToken(
@@ -139,9 +139,21 @@ const getMe = async (userId: string) => {
   return user;
 };
 
+const updateProfile = async (userId: string, payload: IUpdateProfilePayload) => {
+  const user = await prisma.user.update({
+    where: { id: userId },
+    data: payload,
+    omit: { password: true },
+    include: { technicianProfile: true },
+  });
+
+  return user;
+};
+
 export const authService = {
   registerUser,
   loginUser,
   refreshToken,
   getMe,
+  updateProfile,
 };

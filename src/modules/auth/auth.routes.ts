@@ -22,4 +22,11 @@ router.post("/refresh-token", authController.refreshToken);
 
 router.get("/me", auth(), authController.getMe);
 
+router.patch(
+  "/me",
+  auth(),
+  validateRequest(authValidation.updateProfileValidationSchema),
+  authController.updateMyProfile,
+);
+
 export const authRoutes = router;
