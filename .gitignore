@@ -3,3 +3,5 @@ dist
 generated
 .env
 /generated/prisma
+api/index.js
+api/index.js.map
