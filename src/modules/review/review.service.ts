@@ -1,8 +1,8 @@
 import httpStatus from "http-status";
-import { BookingStatus } from "../../../generated/prisma/enums";
-import { AppError } from "../../errors/AppError";
-import { prisma } from "../../lib/prisma";
-import { ICreateReviewPayload } from "./review.interface";
+import { BookingStatus } from "../../../generated/prisma/enums.js";
+import { AppError } from "../../errors/AppError.js";
+import { prisma } from "../../lib/prisma.js";
+import { ICreateReviewPayload } from "./review.interface.js";
 
 const createReview = async (customerId: string, payload: ICreateReviewPayload) => {
   const booking = await prisma.booking.findUniqueOrThrow({

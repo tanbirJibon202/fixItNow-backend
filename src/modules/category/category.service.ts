@@ -1,6 +1,6 @@
 import httpStatus from "http-status";
-import { AppError } from "../../errors/AppError";
-import { prisma } from "../../lib/prisma";
+import { AppError } from "../../errors/AppError.js";
+import { prisma } from "../../lib/prisma.js";
 
 const createCategory = async (payload: { name: string; description?: string }) => {
   const existing = await prisma.category.findUnique({

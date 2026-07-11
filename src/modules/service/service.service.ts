@@ -1,12 +1,12 @@
 import httpStatus from "http-status";
-import { ServiceWhereInput } from "../../../generated/prisma/models";
-import { AppError } from "../../errors/AppError";
-import { prisma } from "../../lib/prisma";
+import { ServiceWhereInput } from "../../../generated/prisma/models.js";
+import { AppError } from "../../errors/AppError.js";
+import { prisma } from "../../lib/prisma.js";
 import {
   ICreateServicePayload,
   IServiceQuery,
   IUpdateServicePayload,
-} from "./service.interface";
+} from "./service.interface.js";
 
 const getTechnicianProfileOrThrow = async (userId: string) => {
   const profile = await prisma.technicianProfile.findUnique({

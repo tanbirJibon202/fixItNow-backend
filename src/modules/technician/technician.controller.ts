@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import httpStatus from "http-status";
-import { catchAsync } from "../../utils/catchAsync";
-import { sendResponse } from "../../utils/sendResponse";
-import { technicianService } from "./technician.service";
+import { catchAsync } from "../../utils/catchAsync.js";
+import { sendResponse } from "../../utils/sendResponse.js";
+import { technicianService } from "./technician.service.js";
 
 const upsertProfile = catchAsync(async (req: Request, res: Response) => {
   const result = await technicianService.upsertProfile(req.user!.id, req.body);

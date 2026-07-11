@@ -1,12 +1,12 @@
 import httpStatus from "http-status";
-import { BookingStatus } from "../../../generated/prisma/enums";
-import { AppError } from "../../errors/AppError";
-import { prisma } from "../../lib/prisma";
+import { BookingStatus } from "../../../generated/prisma/enums.js";
+import { AppError } from "../../errors/AppError.js";
+import { prisma } from "../../lib/prisma.js";
 import {
   IAvailabilitySlot,
   ITechnicianQuery,
   IUpsertTechnicianProfilePayload,
-} from "./technician.interface";
+} from "./technician.interface.js";
 
 const upsertProfile = async (
   userId: string,

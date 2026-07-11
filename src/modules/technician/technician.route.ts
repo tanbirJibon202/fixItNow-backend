@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { Role } from "../../../generated/prisma/enums";
-import { auth } from "../../middlewares/auth";
-import { validateRequest } from "../../middlewares/validateRequest";
-import { technicianController } from "./technician.controller";
-import { technicianValidation } from "./technician.validation";
+import { Role } from "../../../generated/prisma/enums.js";
+import { auth } from "../../middlewares/auth.js";
+import { validateRequest } from "../../middlewares/validateRequest.js";
+import { technicianController } from "./technician.controller.js";
+import { technicianValidation } from "./technician.validation.js";
 
 const publicRouter = Router();
 

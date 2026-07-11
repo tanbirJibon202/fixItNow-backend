@@ -1,10 +1,10 @@
 import httpStatus from "http-status";
-import { BookingStatus } from "../../../generated/prisma/enums";
-import config from "../../config";
-import { AppError } from "../../errors/AppError";
-import { prisma } from "../../lib/prisma";
-import { stripe } from "../../lib/stripe";
-import { handleCheckoutCompleted, handleCheckoutExpired } from "./payment.utils";
+import { BookingStatus } from "../../../generated/prisma/enums.js";
+import config from "../../config/index.js";
+import { AppError } from "../../errors/AppError.js";
+import { prisma } from "../../lib/prisma.js";
+import { stripe } from "../../lib/stripe.js";
+import { handleCheckoutCompleted, handleCheckoutExpired } from "./payment.utils.js";
 
 const createCheckoutSession = async (userId: string, bookingId: string) => {
   const booking = await prisma.booking.findUniqueOrThrow({

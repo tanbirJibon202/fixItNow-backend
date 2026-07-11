@@ -1,8 +1,8 @@
 import httpStatus from "http-status";
-import { BookingStatus } from "../../../generated/prisma/enums";
-import { AppError } from "../../errors/AppError";
-import { prisma } from "../../lib/prisma";
-import { ICreateBookingPayload } from "./booking.interface";
+import { BookingStatus } from "../../../generated/prisma/enums.js";
+import { AppError } from "../../errors/AppError.js";
+import { prisma } from "../../lib/prisma.js";
+import { ICreateBookingPayload } from "./booking.interface.js";
 
 const CANCELLABLE_STATUSES: BookingStatus[] = [
   BookingStatus.REQUESTED,

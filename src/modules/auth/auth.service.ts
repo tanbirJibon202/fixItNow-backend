@@ -1,12 +1,12 @@
 import bcrypt from "bcryptjs";
 import httpStatus from "http-status";
 import { JwtPayload, SignOptions } from "jsonwebtoken";
-import { Role } from "../../../generated/prisma/enums";
-import config from "../../config";
-import { AppError } from "../../errors/AppError";
-import { prisma } from "../../lib/prisma";
-import { jwtUtils } from "../../utils/jwt";
-import { ILoginUser, IRegisterUser, IUpdateProfilePayload } from "./auth.interface";
+import { Role } from "../../../generated/prisma/enums.js";
+import config from "../../config/index.js";
+import { AppError } from "../../errors/AppError.js";
+import { prisma } from "../../lib/prisma.js";
+import { jwtUtils } from "../../utils/jwt.js";
+import { ILoginUser, IRegisterUser, IUpdateProfilePayload } from "./auth.interface.js";
 
 const createTokens = (payload: JwtPayload) => {
   const accessToken = jwtUtils.createToken(

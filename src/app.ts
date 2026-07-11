@@ -1,20 +1,20 @@
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { Application, NextFunction, Request, Response } from "express";
-import config from "./config/index";
-import { globalErrorHandler } from "./middlewares/globalErrorHandler";
-import { notFound } from "./middlewares/notFound";
-import { adminRoutes } from "./modules/admin/admin.route";
-import { authRoutes } from "./modules/auth/auth.routes";
-import { bookingRoutes } from "./modules/booking/booking.route";
-import { categoryRoutes } from "./modules/category/category.route";
-import { paymentRoutes } from "./modules/payment/payment.route";
-import { reviewRoutes } from "./modules/review/review.route";
-import { serviceRoutes } from "./modules/service/service.route";
+import config from "./config/index.js";
+import { globalErrorHandler } from "./middlewares/globalErrorHandler.js";
+import { notFound } from "./middlewares/notFound.js";
+import { adminRoutes } from "./modules/admin/admin.route.js";
+import { authRoutes } from "./modules/auth/auth.routes.js";
+import { bookingRoutes } from "./modules/booking/booking.route.js";
+import { categoryRoutes } from "./modules/category/category.route.js";
+import { paymentRoutes } from "./modules/payment/payment.route.js";
+import { reviewRoutes } from "./modules/review/review.route.js";
+import { serviceRoutes } from "./modules/service/service.route.js";
 import {
   technicianManagementRoutes,
   technicianPublicRoutes,
-} from "./modules/technician/technician.route";
+} from "./modules/technician/technician.route.js";
 
 const app: Application = express();
 
