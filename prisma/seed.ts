@@ -2,8 +2,12 @@ import "dotenv/config";
 import bcrypt from "bcryptjs";
 import { prisma } from "../src/lib/prisma";
 
-const ADMIN_EMAIL = "admin@fixitnow.com";
-const ADMIN_PASSWORD = "Admin@123";
+const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL || "admin@fixitnow.com";
+const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD || "Admin@123";
+const TECHNICIAN_EMAIL = process.env.SEED_TECHNICIAN_EMAIL || "technician@fixitnow.com";
+const TECHNICIAN_PASSWORD = process.env.SEED_TECHNICIAN_PASSWORD || "Technician@123";
+const CUSTOMER_EMAIL = process.env.SEED_CUSTOMER_EMAIL || "customer@fixitnow.com";
+const CUSTOMER_PASSWORD = process.env.SEED_CUSTOMER_PASSWORD || "Customer@123";
 
 async function main() {
   const hashedAdminPassword = await bcrypt.hash(ADMIN_PASSWORD, 10);
@@ -30,12 +34,12 @@ async function main() {
   }
   console.log(`Seeded ${categories.length} categories`);
 
-  const technicianPassword = await bcrypt.hash("Technician@123", 10);
+  const technicianPassword = await bcrypt.hash(TECHNICIAN_PASSWORD, 10);
   const technicianUser = await prisma.user.upsert({
-    where: { email: "technician@fixitnow.com" },
+    where: { email: TECHNICIAN_EMAIL },
     create: {
       name: "Sample Technician",
-      email: "technician@fixitnow.com",
+      email: TECHNICIAN_EMAIL,
       password: technicianPassword,
       role: "TECHNICIAN",
     },
@@ -76,18 +80,18 @@ async function main() {
   }
   console.log("Seeded sample technician with a service");
 
-  const customerPassword = await bcrypt.hash("Customer@123", 10);
+  const customerPassword = await bcrypt.hash(CUSTOMER_PASSWORD, 10);
   await prisma.user.upsert({
-    where: { email: "customer@fixitnow.com" },
+    where: { email: CUSTOMER_EMAIL },
     create: {
       name: "Sample Customer",
-      email: "customer@fixitnow.com",
+      email: CUSTOMER_EMAIL,
       password: customerPassword,
       role: "CUSTOMER",
     },
     update: {},
   });
-  console.log("Seeded sample customer -> email: customer@fixitnow.com | password: Customer@123");
+  console.log(`Seeded sample customer -> email: ${CUSTOMER_EMAIL} | password: ${CUSTOMER_PASSWORD}`);
 }
 
 main()
