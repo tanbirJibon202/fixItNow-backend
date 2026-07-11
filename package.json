@@ -13,7 +13,7 @@
     "stripe:webhook": "stripe listen --forward-to localhost:5000/api/payments/webhook",
     "seed": "tsx prisma/seed.ts",
     "postinstall": "prisma generate",
-    "vercel-build": "mkdir -p public && echo 'FixItNow API is running. See /api for endpoints.' > public/index.html && esbuild src/app.ts --bundle --platform=node --format=cjs --target=node20 --outfile=api/index.cjs --external:express --external:cors --external:cookie-parser --external:bcryptjs --external:jsonwebtoken --external:pg --external:stripe --external:zod --external:dotenv --external:@prisma/client --external:@prisma/adapter-pg --define:import.meta.url='\"file:///var/task/index.cjs\"' --footer:js='module.exports = module.exports.default || module.exports;'",
+    "vercel-build": "node scripts/vercel-build.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "prisma": {
@@ -40,6 +40,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.1.1",
     "@types/pg": "^8.20.0",
+    "@vercel/nft": "^1.10.2",
     "esbuild": "^0.28.1",
     "prisma": "^7.8.0",
     "tsx": "^4.23.0",
