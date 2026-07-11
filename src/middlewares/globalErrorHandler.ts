@@ -3,7 +3,7 @@ import httpStatus from "http-status";
 import { ZodError } from "zod";
 import { Prisma } from "../../generated/prisma/client";
 import { AppError } from "../errors/AppError";
-import config from "../config";
+import config from "../config/index";
 
 export const globalErrorHandler = (
   err: any,
