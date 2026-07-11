@@ -1,0 +1,501 @@
+openapi: 3.0.0
+info:
+  title: FixItNow API
+  description: >
+    Home services marketplace backend API. Customers browse and book
+    technicians, pay via Stripe, and leave reviews; technicians manage
+    services and bookings; admins moderate users and categories.
+
+
+    Auth uses httpOnly cookies set on login. When testing here, first call
+    `POST /api/auth/login`, then use the "Authorize" button with the returned
+    `accessToken` as a Bearer token for protected routes.
+  version: 1.0.0
+servers:
+  - url: https://fix-it-now-backend-mu.vercel.app
+    description: Production
+  - url: http://localhost:5000
+    description: Local
+tags:
+  - name: Auth
+  - name: Category
+  - name: Technician
+  - name: Service
+  - name: Booking
+  - name: Payment
+  - name: Review
+  - name: Admin
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+paths:
+  /api/auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      description: Registers a customer or technician. Admin accounts cannot self-register.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name: { type: string, example: Test Customer }
+                email: { type: string, example: testcustomer@example.com }
+                password: { type: string, example: Customer@123 }
+                phone: { type: string, example: "01700000001" }
+                role: { type: string, enum: [CUSTOMER, TECHNICIAN], example: CUSTOMER }
+      responses:
+        "201": { description: User registered successfully }
+        "400": { description: Email already in use / validation error }
+
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Log in and receive JWT tokens
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, example: admin@fixitnow.com }
+                password: { type: string, example: Admin@123 }
+      responses:
+        "200": { description: Login successful, returns accessToken and refreshToken }
+        "401": { description: Incorrect password }
+        "404": { description: No user with this email }
+
+  /api/auth/refresh-token:
+    post:
+      tags: [Auth]
+      summary: Exchange a refresh token for a new access token
+      responses:
+        "200": { description: New accessToken issued }
+        "401": { description: Refresh token missing or invalid }
+
+  /api/auth/me:
+    get:
+      tags: [Auth]
+      summary: Get the current authenticated user
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: Current user profile }
+        "401": { description: Not logged in }
+    patch:
+      tags: [Auth]
+      summary: Update the current user's basic profile
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string, example: Tanbir Ahamed Jibon }
+                phone: { type: string, example: "01731034798" }
+      responses:
+        "200": { description: Profile updated }
+
+  /api/categories:
+    get:
+      tags: [Category]
+      summary: List all service categories
+      responses:
+        "200": { description: Category list }
+
+  /api/technicians:
+    get:
+      tags: [Technician]
+      summary: Browse technicians (public)
+      parameters:
+        - in: query
+          name: searchTerm
+          schema: { type: string }
+        - in: query
+          name: location
+          schema: { type: string }
+        - in: query
+          name: categoryId
+          schema: { type: string }
+        - in: query
+          name: minRating
+          schema: { type: number }
+        - in: query
+          name: page
+          schema: { type: integer }
+        - in: query
+          name: limit
+          schema: { type: integer }
+      responses:
+        "200": { description: Paginated technician list with avgRating/totalReviews }
+
+  /api/technicians/{id}:
+    get:
+      tags: [Technician]
+      summary: Get a technician's profile with services and reviews
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: Technician profile }
+        "404": { description: Technician not found }
+
+  /api/technician/profile:
+    put:
+      tags: [Technician]
+      summary: Create or update the current technician's profile
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bio: { type: string, example: Experienced electrician and plumber }
+                experienceYears: { type: integer, example: 3 }
+                skills: { type: array, items: { type: string }, example: [Electrical, Plumbing] }
+                location: { type: string, example: Dhaka }
+      responses:
+        "200": { description: Profile saved }
+
+  /api/technician/availability:
+    put:
+      tags: [Technician]
+      summary: Replace the current technician's availability slots
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [slots]
+              properties:
+                slots:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      dayOfWeek: { type: integer, example: 0 }
+                      startTime: { type: string, example: "09:00" }
+                      endTime: { type: string, example: "17:00" }
+      responses:
+        "200": { description: Availability updated }
+
+  /api/technician/bookings:
+    get:
+      tags: [Technician]
+      summary: Get the current technician's bookings
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: Booking list }
+
+  /api/technician/bookings/{id}:
+    patch:
+      tags: [Technician]
+      summary: Update a booking's status (accept/decline/progress/complete)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [ACCEPTED, DECLINED, IN_PROGRESS, COMPLETED]
+                  example: ACCEPTED
+      responses:
+        "200": { description: Booking status updated }
+        "400": { description: Invalid status transition }
+
+  /api/services:
+    get:
+      tags: [Service]
+      summary: Browse active services (public)
+      parameters:
+        - in: query
+          name: searchTerm
+          schema: { type: string }
+        - in: query
+          name: categoryId
+          schema: { type: string }
+        - in: query
+          name: technicianId
+          schema: { type: string }
+        - in: query
+          name: location
+          schema: { type: string }
+        - in: query
+          name: minPrice
+          schema: { type: number }
+        - in: query
+          name: maxPrice
+          schema: { type: number }
+        - in: query
+          name: page
+          schema: { type: integer }
+        - in: query
+          name: limit
+          schema: { type: integer }
+      responses:
+        "200": { description: Paginated service list }
+    post:
+      tags: [Service]
+      summary: Create a service (technician only)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, description, price, categoryId]
+              properties:
+                title: { type: string, example: AC Repair & Servicing }
+                description: { type: string, example: Full AC cleaning, gas refill and repair service }
+                price: { type: number, example: 40 }
+                durationMins: { type: integer, example: 90 }
+                categoryId: { type: string, example: 63b1afd6-75cd-495f-acd9-009803ecc3ea }
+      responses:
+        "201": { description: Service created }
+
+  /api/services/{id}:
+    get:
+      tags: [Service]
+      summary: Get a service's details
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: Service detail }
+    patch:
+      tags: [Service]
+      summary: Update a service (owning technician only)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                description: { type: string }
+                price: { type: number }
+                durationMins: { type: integer }
+                categoryId: { type: string }
+                isActive: { type: boolean }
+      responses:
+        "200": { description: Service updated }
+        "403": { description: Not the owner of this service }
+    delete:
+      tags: [Service]
+      summary: Delete a service (owning technician only)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: Service deleted }
+        "403": { description: Not the owner of this service }
+
+  /api/bookings:
+    post:
+      tags: [Booking]
+      summary: Create a booking (customer only)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [serviceId, scheduledAt]
+              properties:
+                serviceId: { type: string, example: 4413979d-ab2f-4cc0-833c-c4ba9383f902 }
+                scheduledAt: { type: string, format: date-time, example: "2026-07-20T10:00:00.000Z" }
+                address: { type: string, example: House 12, Road 5, Dhanmondi, Dhaka }
+                notes: { type: string, example: AC not cooling properly }
+      responses:
+        "201": { description: Booking created (status REQUESTED) }
+    get:
+      tags: [Booking]
+      summary: Get the current customer's bookings
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: Booking list }
+
+  /api/bookings/{id}:
+    get:
+      tags: [Booking]
+      summary: Get a booking's details
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: Booking detail }
+        "403": { description: Not the owner (customer/technician/admin only) }
+
+  /api/bookings/{id}/cancel:
+    patch:
+      tags: [Booking]
+      summary: Cancel a booking (customer only, before IN_PROGRESS)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: Booking cancelled }
+        "400": { description: Booking can no longer be cancelled }
+
+  /api/payments/create:
+    post:
+      tags: [Payment]
+      summary: Create a Stripe checkout session for an accepted booking
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [bookingId]
+              properties:
+                bookingId: { type: string, example: a06bb4c6-3f40-4b48-bc6e-756eabb651f2 }
+      responses:
+        "200": { description: Returns a Stripe paymentUrl }
+        "400": { description: Booking not in ACCEPTED status, or already paid }
+
+  /api/payments/webhook:
+    post:
+      tags: [Payment]
+      summary: Stripe webhook (confirm/verify payment) — called by Stripe, not manually
+      responses:
+        "200": { description: Event processed }
+
+  /api/payments:
+    get:
+      tags: [Payment]
+      summary: Get the current user's payment history
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: Payment list }
+
+  /api/payments/{id}:
+    get:
+      tags: [Payment]
+      summary: Get a payment's details
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: Payment detail }
+
+  /api/reviews:
+    post:
+      tags: [Review]
+      summary: Leave a review for a completed booking (customer only)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [bookingId, rating]
+              properties:
+                bookingId: { type: string, example: a06bb4c6-3f40-4b48-bc6e-756eabb651f2 }
+                rating: { type: integer, minimum: 1, maximum: 5, example: 5 }
+                comment: { type: string, example: Excellent service, very professional and on time! }
+      responses:
+        "201": { description: Review created }
+        "400": { description: Booking not completed, or already reviewed }
+
+  /api/admin/users:
+    get:
+      tags: [Admin]
+      summary: List all users (admin only)
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: User list }
+
+  /api/admin/users/{id}:
+    patch:
+      tags: [Admin]
+      summary: Ban/unban a user (admin only)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [activeStatus]
+              properties:
+                activeStatus: { type: string, enum: [ACTIVE, BLOCKED], example: BLOCKED }
+      responses:
+        "200": { description: User status updated }
+
+  /api/admin/bookings:
+    get:
+      tags: [Admin]
+      summary: List all bookings (admin only)
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: Booking list }
+
+  /api/admin/categories:
+    get:
+      tags: [Admin]
+      summary: List all categories (admin only)
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: Category list }
+    post:
+      tags: [Admin]
+      summary: Create a new category (admin only)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string, example: Carpentry }
+                description: { type: string, example: Furniture and woodwork repair services }
+      responses:
+        "201": { description: Category created }
+        "400": { description: Category name already exists }
