@@ -5,3 +5,5 @@ generated
 /generated/prisma
 api/index.js
 api/index.js.map
+api/index.cjs
+api/index.cjs.map
